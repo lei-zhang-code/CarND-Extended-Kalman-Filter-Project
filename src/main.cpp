@@ -54,6 +54,7 @@ int main()
         std::string event = j[0].get<std::string>();
         
         if (event == "telemetry") {
+          // cout << "------------------------------------------------------------------------------------------------------------------" << endl;
           // j[1] is the data JSON object
           
           string sensor_measurment = j[1]["sensor_measurement"];
@@ -76,6 +77,7 @@ int main()
           		meas_package.raw_measurements_ << px, py;
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
+              // cout << "Laser: " << meas_package.raw_measurements_ << endl;
           } else if (sensor_type.compare("R") == 0) {
 
       	  		meas_package.sensor_type_ = MeasurementPackage::RADAR;
@@ -89,6 +91,7 @@ int main()
           		meas_package.raw_measurements_ << ro,theta, ro_dot;
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
+              // cout << "Radar: " << meas_package.raw_measurements_ << endl;
           }
           float x_gt;
     	  float y_gt;
@@ -104,9 +107,12 @@ int main()
     	  gt_values(2) = vx_gt;
     	  gt_values(3) = vy_gt;
     	  ground_truth.push_back(gt_values);
-          
+        // cout << "ground_truth_x: " << x_gt << ", ground_truth_y: " << y_gt << ", ground_truth_vx: " << vx_gt << ", ground_truth_vy: " << vy_gt << endl;
+        
+        // cout << "Start to ProcessMeasurement" << endl;
           //Call ProcessMeasurment(meas_package) for Kalman filter
     	  fusionEKF.ProcessMeasurement(meas_package);    	  
+        // cout << "Done ProcessMeasurement" << endl;
 
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
@@ -125,6 +131,7 @@ int main()
     	  estimations.push_back(estimate);
 
     	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+        // cout << "Done CalculateRMSE " << endl;
 
           json msgJson;
           msgJson["estimate_x"] = p_x;
@@ -136,7 +143,7 @@ int main()
           auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-	  
+        // assert(false);
         }
       } else {
         
